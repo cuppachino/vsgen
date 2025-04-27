@@ -13,6 +13,9 @@ pub struct Args {
     /// Preview program output without making any changes to the file system.
     #[arg(short = None, long = "dry-run")]
     is_dry_run: bool,
+
+    #[arg(short, long, default_value = "dist")]
+    dist: String,
 }
 
 impl Args {
@@ -26,5 +29,10 @@ impl Args {
     #[inline]
     pub fn is_dry_run(&self) -> bool {
         self.is_dry_run
+    }
+
+    #[inline]
+    pub fn dist(&self) -> &str {
+        self.dist.as_str()
     }
 }

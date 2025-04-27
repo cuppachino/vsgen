@@ -1,6 +1,7 @@
-use std::time::Instant;
+use std::{ io::{ Seek, Write }, path::PathBuf, time::Instant };
 
 use clap::Parser;
+use data::Recipe;
 use file::ManifestIter;
 
 mod cli;
@@ -14,6 +15,15 @@ fn main() -> Result<(), error::Error> {
 
     let args = cli::Args::parse();
 
+    if args.paths().is_empty() {
+        eprintln!("No input files or directories specified.");
+        std::process::exit(1);
+    }
+
+    let dist_path = args.dist();
+    let dist_path = PathBuf::from(dist_path);
+    std::fs::create_dir_all(&dist_path).map_err(error::Error::Io)?;
+
     for manifest in args.paths().iter_manifests() {
         let manifest = manifest?;
 
@@ -22,11 +32,34 @@ fn main() -> Result<(), error::Error> {
         let datagen = datagen::DataGen::new(&manifest)?;
         let recipes = datagen.generate()?;
 
+        println!("Generated {} recipes", recipes.len());
+
         if args.is_dry_run() {
             for recipe in recipes {
-                println!("{:?}", recipe);
+                println!("Recipe: {:#?}", recipe);
             }
             println!("Dry run complete. No files were written.");
+        } else {
+            let recipe_len = recipes.len();
+            if recipe_len == 0 {
+                println!("No recipes generated.");
+                continue;
+            }
+            let file_path = dist_path.join(manifest.output.as_str());
+            let file = std::fs::File::create(&file_path).map_err(error::Error::Io)?;
+            let mut writer = std::io::BufWriter::new(file);
+            writer.write_all(b"[\n").map_err(error::Error::Io)?;
+
+            for recipe in recipes {
+                recipe.write(&mut writer).map_err(error::Error::Io)?;
+                writer.write_all(b",\n").map_err(error::Error::Io)?;
+            }
+
+            // Remove the last comma and newline
+            writer.seek_relative(-2).map_err(error::Error::Io)?;
+            writer.write_all(b"]").map_err(error::Error::Io)?;
+
+            println!("Saved recipes to {}", file_path.display());
         }
     }
 

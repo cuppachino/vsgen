@@ -39,6 +39,14 @@ pub struct Recipe {
     pub rest: HashMap<String, serde_json::Value>,
 }
 
+impl Recipe {
+    pub fn write<W: std::io::Write>(&self, writer: &mut W) -> std::io::Result<()> {
+        // Serialize the recipe to JSON and write it to the writer
+        let json = serde_json::to_string(self)?;
+        writeln!(writer, "{}", json)
+    }
+}
+
 /// A grammar is a set of rules that can be applied to a template recipe to generate multiple
 /// variants of the same recipe.
 #[derive(Serialize, Deserialize, Debug)]
