@@ -1,0 +1,98 @@
+{
+    "output": "shovel.gen.json",
+    "static": {
+        "glass": [
+            "clear",
+            "green"
+        ],
+        "metal": [
+            "copper",
+            "cupronickel",
+            "tinbronze",
+            "bismuthbronze",
+            "blackbronze",
+            "iron",
+            "meteoriciron",
+            "steel",
+            "gold",
+            "silver"
+        ]
+    },
+    "grammars": [
+        {
+            "tags": [
+                {
+                    "name": "metal",
+                    "values": [
+                        "@metal"
+                    ]
+                },
+                {
+                    "name": "glass",
+                    "values": [
+                        "@glass"
+                    ]
+                }
+            ]
+        },
+        {
+            "tags": [],
+            "remove": [
+                "output.attributes"
+            ],
+            "modify": [
+                {
+                    "path": "ingredients.M.code",
+                    "value": "metalnailsandstrips-*"
+                }
+            ]
+        }
+    ],
+    "templates": [
+        {
+            "name": "default",
+            "ingredientPattern": "S_,MH,T_",
+            "ingredients": {
+                "T": {
+                    "type": "item",
+                    "code": "shovelhead-*",
+                    "name": "material",
+                    "skipVariants": [
+                        "chert",
+                        "granite",
+                        "andesite",
+                        "basalt",
+                        "obsidian",
+                        "peridotite",
+                        "flint"
+                    ]
+                },
+                "M": {
+                    "type": "item",
+                    "code": "metalnailsandstrips-%metal%-%glass%"
+                },
+                "H": {
+                    "type": "item",
+                    "code": "hammer-*",
+                    "isTool": true,
+                    "toolDurabilityCost": 10
+                },
+                "S": {
+                    "type": "item",
+                    "code": "stick"
+                }
+            },
+            "copyAttributesFrom": "S",
+            "width": 2,
+            "height": 3,
+            "output": {
+                "type": "item",
+                "code": "shovel-fine-{material}",
+                "quantity": 1,
+                "attributes": {
+                    "stripsTexture": "game:block/metal/ingot/%metal%"
+                }
+            }
+        }
+    ]
+}
