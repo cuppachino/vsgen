@@ -1,7 +1,6 @@
 use std::time::Instant;
 
 use clap::Parser;
-use data::Manifest;
 use file::ManifestIter;
 
 mod cli;
