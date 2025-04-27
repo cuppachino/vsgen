@@ -43,7 +43,7 @@ impl Recipe {
     pub fn write<W: std::io::Write>(&self, writer: &mut W) -> std::io::Result<()> {
         // Serialize the recipe to JSON and write it to the writer
         let json = serde_json::to_string(self)?;
-        writeln!(writer, "{}", json)
+        writeln!(writer, "{json}")
     }
 }
 
@@ -158,7 +158,7 @@ impl std::fmt::Display for DotPathIterator<'_> {
             if i > 0 {
                 write!(f, ".")?;
             }
-            write!(f, "{}", token)?;
+            write!(f, "{token}")?;
         }
         Ok(())
     }
@@ -178,9 +178,9 @@ pub enum DotToken<'a> {
 impl std::fmt::Display for DotToken<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            DotToken::Property(name) => write!(f, "{}", name),
+            DotToken::Property(name) => write!(f, "{name}"),
             DotToken::Wildcard => write!(f, "*"),
-            DotToken::Index(index) => write!(f, "{}", index),
+            DotToken::Index(index) => write!(f, "{index}"),
         }
     }
 }

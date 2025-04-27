@@ -35,7 +35,7 @@ impl<'a> DataGen<'a> {
             .iter()
             .find(|template| template.name == "default")
             .or_else(|| manifest.templates.first())
-            .ok_or_else(|| Error::MissingDefaultTemplate)?;
+            .ok_or(Error::MissingDefaultTemplate)?;
 
         Ok(Self { manifest, default_template })
     }
@@ -155,8 +155,6 @@ impl Grammar {
         let mut patch_iter = PatchIterator::new(&tags);
 
         for patch in &mut patch_iter {
-            println!("Patch: {:?}", patch);
-
             // Create a new recipe, starting from the target template, and apply the patch to it.
             let mut recipe: Value = serde_json
                 ::to_value(template.recipe.clone())
@@ -178,8 +176,6 @@ impl Grammar {
             for substitution in &patch {
                 substitution.apply(&mut recipe)?;
             }
-
-            println!("Recipe: {:#?}", recipe);
 
             // Finish the recipe.
             recipes.push(recipe);
@@ -349,20 +345,18 @@ impl Remove {
                                 prop: prop.to_string(),
                             });
                         }
-                    } else {
-                        if let Value::Object(obj) = current {
-                            current = obj.get_mut(prop).ok_or_else(|| {
-                                Error::UnknownPropertyInObjectPath {
-                                    path: self.0.to_string(),
-                                    prop: prop.to_string(),
-                                }
-                            })?;
-                        } else {
-                            return Err(Error::ExpectedObjectToRemoveProperty {
+                    } else if let Value::Object(obj) = current {
+                        current = obj.get_mut(prop).ok_or_else(|| {
+                            Error::UnknownPropertyInObjectPath {
                                 path: self.0.to_string(),
                                 prop: prop.to_string(),
-                            });
-                        }
+                            }
+                        })?;
+                    } else {
+                        return Err(Error::ExpectedObjectToRemoveProperty {
+                            path: self.0.to_string(),
+                            prop: prop.to_string(),
+                        });
                     }
                 }
                 DotToken::Index(index) => {
@@ -383,22 +377,20 @@ impl Remove {
                                 index,
                             });
                         }
-                    } else {
-                        if let Value::Array(arr) = current {
-                            if index >= arr.len() {
-                                return Err(Error::IndexOutOfBounds {
-                                    index,
-                                    len: arr.len(),
-                                    path: self.0.to_string(),
-                                });
-                            }
-                            current = &mut arr[index];
-                        } else {
-                            return Err(Error::ExpectedArrayToRemoveIndex {
-                                path: self.0.to_string(),
+                    } else if let Value::Array(arr) = current {
+                        if index >= arr.len() {
+                            return Err(Error::IndexOutOfBounds {
                                 index,
+                                len: arr.len(),
+                                path: self.0.to_string(),
                             });
                         }
+                        current = &mut arr[index];
+                    } else {
+                        return Err(Error::ExpectedArrayToRemoveIndex {
+                            path: self.0.to_string(),
+                            index,
+                        });
                     }
                 }
                 DotToken::Wildcard => {
@@ -470,7 +462,7 @@ impl ReplaceMut for Ingredient {
         for variant in &mut self.skip_variants {
             *variant = variant.replace(target, value);
         }
-        for (_, v) in &mut self.rest {
+        for v in self.rest.values_mut() {
             v.replace_mut(target, value);
         }
     }

@@ -1,7 +1,6 @@
 use std::{ io::{ Seek, Write }, path::PathBuf, time::Instant };
 
 use clap::Parser;
-use data::Recipe;
 use file::ManifestIter;
 
 mod cli;
@@ -27,7 +26,7 @@ fn main() -> Result<(), error::Error> {
     for manifest in args.paths().iter_manifests() {
         let manifest = manifest?;
 
-        println!("Processing manifest: {:#?}", manifest);
+        println!("Processing manifest: {manifest:#?}");
 
         let datagen = datagen::DataGen::new(&manifest)?;
         let recipes = datagen.generate()?;
@@ -36,7 +35,7 @@ fn main() -> Result<(), error::Error> {
 
         if args.is_dry_run() {
             for recipe in recipes {
-                println!("Recipe: {:#?}", recipe);
+                println!("Recipe: {recipe:#?}");
             }
             println!("Dry run complete. No files were written.");
         } else {
@@ -64,7 +63,7 @@ fn main() -> Result<(), error::Error> {
     }
 
     let elapsed_time = time_now.elapsed();
-    println!("Finished all tasks in {:.2?}", elapsed_time);
+    println!("Finished all tasks in {elapsed_time:.2?}");
 
     Ok(())
 }
