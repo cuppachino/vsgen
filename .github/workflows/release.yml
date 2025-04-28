@@ -22,11 +22,13 @@ jobs:
             archive: tar.gz tar.xz tar.zst
           - target: x86_64-apple-darwin
             archive: zip
+            macos_deployment_target: 10.10
     steps:
       - uses: actions/checkout@master
       - name: Compile and release
         uses: cuppachino/rust-build.action@master
         env:
+          MACOSX_DEPLOYMENT_TARGET: ${{ matrix.macos_deployment_target || '' }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           RUSTTARGET: ${{ matrix.target }}
