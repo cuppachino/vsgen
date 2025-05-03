@@ -25,9 +25,6 @@ fn main() -> Result<(), error::Error> {
 
     for manifest in args.paths().iter_manifests() {
         let manifest = manifest?;
-
-        println!("Processing manifest: {manifest:#?}");
-
         let datagen = datagen::DataGen::new(&manifest)?;
         let recipes = datagen.generate()?;
 
@@ -66,4 +63,44 @@ fn main() -> Result<(), error::Error> {
     println!("Finished all tasks in {elapsed_time:.2?}");
 
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::file::ManifestIterator;
+
+    use super::*;
+
+    const TEST: &str = "input/shovel.json";
+
+    #[test]
+    fn benchmark_deserialization() {
+        let start = Instant::now();
+        let paths: Vec<PathBuf> = vec![TEST.into()];
+        let mut manifest_iter = paths.iter_manifests();
+        for _ in &mut manifest_iter {
+            // Do nothing, just iterate
+        }
+        let elapsed = start.elapsed();
+        println!("Deserialization took: {elapsed:.2?}");
+    }
+
+    #[test]
+    fn benchmark_serialization() {
+        let start = Instant::now();
+        let paths: Vec<PathBuf> = vec![TEST.into()];
+        let mut manifest_iter = paths.iter_manifests();
+        let mut buf = Vec::new();
+        for manifest in &mut manifest_iter {
+            let manifest = manifest.unwrap();
+            let datagen = datagen::DataGen::new(&manifest).unwrap();
+            let recipes = datagen.generate().unwrap();
+            for recipe in recipes {
+                recipe.write(&mut buf).unwrap();
+            }
+        }
+        let elapsed = start.elapsed();
+        println!("Serialization took: {elapsed:.2?}");
+        println!("Serialized {} bytes", buf.len());
+    }
 }

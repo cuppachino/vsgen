@@ -7,7 +7,7 @@ pub trait ManifestIter<'a> {
     fn iter_manifests(self) -> ManifestIterator<'a>;
 }
 
-impl<'a> ManifestIter<'a> for &'a Vec<PathBuf> {
+impl<'a> ManifestIter<'a> for &'a [PathBuf] {
     fn iter_manifests(self) -> ManifestIterator<'a> {
         ManifestIterator { current: 0, paths: self, stack: Default::default() }
     }
@@ -17,7 +17,7 @@ impl<'a> ManifestIter<'a> for &'a Vec<PathBuf> {
 /// and yields the contents of each file as an [`Manifest`] object.
 pub struct ManifestIterator<'a> {
     current: usize,
-    paths: &'a Vec<PathBuf>,
+    paths: &'a [PathBuf],
     stack: VecDeque<PathBuf>,
 }
 
