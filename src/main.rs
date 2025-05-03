@@ -67,8 +67,6 @@ fn main() -> Result<(), error::Error> {
 
 #[cfg(test)]
 mod tests {
-    use crate::file::ManifestIterator;
-
     use super::*;
 
     const TEST: &str = "input/shovel.json";
